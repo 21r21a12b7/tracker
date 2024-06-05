@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch Data Every 10 Seconds</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 18px;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #data {
+            margin-top: 20px;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 800px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer">Timer: 10</div>
+    <div id="data">
+        <table>
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="data-body">
+                <tr>
+                    <td colspan="2">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('https://web.onelap.in/api/positions/latest?deviceId=117392', {
+                    headers: {
+                        Authorization: "OTExMDUyMTE3MzpQc2FpMTIzQC5jb20="
+                    }
+                });
+                const data = await response.json();
+                displayData(data);
+            } catch (error) {
+                document.getElementById('data-body').innerHTML = '<tr><td colspan="2">Error fetching data</td></tr>';
+                console.error('Error:', error);
+            }
+        }
+
+        function displayData(data) {
+            const tbody = document.getElementById('data-body');
+            tbody.innerHTML = '';
+            for (const [key, value] of Object.entries(data)) {
+                const row = document.createElement('tr');
+                const keyCell = document.createElement('td');
+                const valueCell = document.createElement('td');
+                keyCell.textContent = key;
+                valueCell.textContent = value;
+                row.appendChild(keyCell);
+                row.appendChild(valueCell);
+                tbody.appendChild(row);
+            }
+        }
+
+        function startTimer(duration, display) {
+            let timer = duration, seconds;
+            setInterval(() => {
+                seconds = parseInt(timer % 60, 10);
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = "Timer: " + seconds;
+
+                if (--timer < 0) {
+                    timer = duration;
+                }
+            }, 1000);
+        }
+
+        window.onload = () => {
+            fetchData();
+            setInterval(fetchData, 10000);
+            const timerDisplay = document.getElementById('timer');
+            startTimer(10, timerDisplay);
+        };
+    </script>
+</body>
+</html>
